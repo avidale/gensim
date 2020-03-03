@@ -2354,7 +2354,7 @@ def _pad_random(m, new_rows, rand):
     return vstack([m, suffix])
 
 
-def _l2_norm(m, replace=False):
+def _l2_norm(m, replace=False, eps=1e-12):
     """Return an L2-normalized version of a matrix.
 
     Parameters
@@ -2363,13 +2363,17 @@ def _l2_norm(m, replace=False):
         The matrix to normalize.
     replace : boolean, optional
         If True, modifies the existing matrix.
+    eps: float, optional
+        This value is added to the denominator to avoid division by zero
 
     Returns
     -------
     The normalized matrix.  If replace=True, this will be the same as m.
 
     """
-    dist = sqrt((m ** 2).sum(-1))[..., newaxis]
+    dist = sqrt((m ** 2).sum(-1)) + eps
+    if len(dist.shape) < len(m.shape):
+        dist = dist[..., newaxis]
     if replace:
         m /= dist
         return m
